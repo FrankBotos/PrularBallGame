@@ -11,7 +11,7 @@ public class TouchManager : MonoBehaviour {
 	void Update () {
 
 		//each time the game updates we check for a "mouse left click" or "tap" and convert it from world space to screen space
-		if (Input.GetMouseButton (0)) {
+		if (Input.GetMouseButtonDown (0)) {
 			Vector3 getMousePositionFar = new Vector3 (Input.mousePosition.x, Input.mousePosition.y, Camera.main.farClipPlane);
 			Vector3 getMousePositionNear = new Vector3 (Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane);
 
