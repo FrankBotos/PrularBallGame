@@ -22,4 +22,13 @@ public class BallBehaviour : MonoBehaviour {
 
 	}
 
+	void OnDestroy(){
+
+		//when ball is destroyed we find the "Text" object, then get a reference to the score script attached to that object, then update the score
+		GameObject tempRef = GameObject.Find ("Text");
+		ScoreController scoreRef = tempRef.GetComponent<ScoreController> ();
+		scoreRef.score++;
+
+	}
+
 }

@@ -6,11 +6,18 @@ public class GameController : MonoBehaviour {
 
 	public GameObject ball;
 
-	public float spawnTimeSeconds = 1.5f; 
+	public float spawnTimeSeconds;
+	public int difficultyLevel;
 
 	// Use this for initialization
 	void Start () {
+
+		difficultyLevel = 0;
+		spawnTimeSeconds = 1.5f;
+
 		InvokeRepeating ("SpawnBall", spawnTimeSeconds, spawnTimeSeconds);
+
+
 	}
 	
 	// Update is called once per frame
@@ -18,7 +25,6 @@ public class GameController : MonoBehaviour {
 	}
 
 	void SpawnBall(){
-
 		//make a list to contain all possible spawn spawn points for the ball
 		List<Vector3> spawnPositions = new List<Vector3> ();
 
