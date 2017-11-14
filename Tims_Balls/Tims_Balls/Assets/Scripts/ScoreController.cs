@@ -6,15 +6,11 @@ public class ScoreController : MonoBehaviour {
 
 	public int score = 0;
 
-	Text scoreText;//will hold text component
+	public Text scoreText;//will hold text component
 
 	// Use this for initialization
 	void Start () {
 		score = 0;//set score to zero when game starts
-
-		//initialize text component
-		scoreText = GetComponent<Text> ();
-
 	}
 	
 	// Update is called once per frame
