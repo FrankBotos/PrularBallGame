@@ -43,6 +43,10 @@ public class GameController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if (Input.GetKey(KeyCode.Escape)) {
+			Application.Quit ();
+		}
+
 		if (isGameOver) {
 			if (Input.GetMouseButtonDown(0)) {
 				SceneManager.LoadScene(SceneManager.GetActiveScene().name);
@@ -145,7 +149,7 @@ public class GameController : MonoBehaviour {
 		// Adjust the color type
 		BallBehaviour.BallType ballType = BallBehaviour.BallType.WhiteBall;
 
-		if (difficultyStage == DifficultyStage.Stage6_RedBalls || true) {
+		if (difficultyStage == DifficultyStage.Stage6_RedBalls) {
 			ballType = Random.value > 0.3 ? BallBehaviour.BallType.WhiteBall : BallBehaviour.BallType.RedBall;
 		}
 
