@@ -3,7 +3,6 @@ using System.Collections;
 using UnityEngine.UI;//this gives us access to Text Component
 
 public class ScoreController : MonoBehaviour {
-
 	public int score = 0;
 
 	public Text scoreText;//will hold text component

@@ -11,16 +11,38 @@ public class BallBehaviour : MonoBehaviour {
 	public float spawnTime;
 	public Vector3 spawnPosition;
 
+	private SpriteRenderer spriteRenderer;
+
 	public enum MovementPattern {
 		Straight,
 		Wave,
+		Reverse,
+		ReverseAndCross
 	}
+
+	public enum BallType {
+		WhiteBall,
+		RedBall
+	}
+
+	public BallType ballType = BallType.WhiteBall;
 
 	public MovementPattern movementPattern = MovementPattern.Straight;
 
 	void Start() {
 		spawnTime = Time.time;
 		spawnPosition = transform.position;
+		spriteRenderer = GetComponent<SpriteRenderer> ();
+		UpdateForBallType ();
+	}
+
+	void UpdateForBallType() {
+		if (ballType == BallType.RedBall) {
+			spriteRenderer.color = new Color (1.0f, 0.0f, 0.0f, 1.0f);
+		}
+		else if (ballType == BallType.WhiteBall) {
+			spriteRenderer.color = new Color (1.0f, 1.0f, 1.0f, 1.0f);
+		}
 	}
 
 	// Update is called once per frame
@@ -34,7 +56,26 @@ public class BallBehaviour : MonoBehaviour {
 		} else if (movementPattern == MovementPattern.Wave) {
 			float vertical = moveSpeed * timeSinceSpawn * (ballGoesUp ? 1.0f : -1.0f);
 			float horizontal = 1.0f * Mathf.Sin (vertical / 1.5f);
-			transform.position = spawnPosition + new Vector3(horizontal, vertical, 0.0f);
+			transform.position = spawnPosition + new Vector3 (horizontal, vertical, 0.0f);
+
+		} else if (movementPattern == MovementPattern.Reverse) {
+			float vertical = 5.0f * Mathf.Sin (0.15f * moveSpeed * timeSinceSpawn) * (ballGoesUp ? 1.0f : -1.0f);
+			float horizontal = 0.0f;
+			transform.position = spawnPosition + new Vector3 (horizontal, vertical, 0.0f);
+
+		} else if (movementPattern == MovementPattern.ReverseAndCross) {
+			float t = 0.15f * moveSpeed * timeSinceSpawn;
+			float offset = 0.2f;
+			float tStartHoriz = Mathf.PI / 2.0f - offset;
+			float vertical = 5.0f * Mathf.Sin (t) * (ballGoesUp ? 1.0f : -1.0f);
+			float horizontal = 0.0f;
+			float targetHoriz = -spawnPosition.x;
+
+			if (t > tStartHoriz) {
+				horizontal =  Mathf.Min((t - tStartHoriz) / (offset * 2.0f), 1.0f) * (targetHoriz - spawnPosition.x);
+			}
+
+			transform.position = spawnPosition + new Vector3 (horizontal, vertical, 0.0f);
 		}
 
 		//check if visible by camera
@@ -50,15 +91,19 @@ public class BallBehaviour : MonoBehaviour {
 		GameObject gameControllerRef = GameObject.Find ("GameController");
 		GameController gameController = gameControllerRef.GetComponent<GameController> ();
 
-		//we increase the score if the ball is visible by the camera only, since that means the player clicked
-		if (isVisibleByCamera) {
-			gameController.TriggerScorePoint ();
-		} else {
-			gameController.TriggerGameOver ();
+		if (ballType == BallType.WhiteBall) {
+			if (isVisibleByCamera) {
+				gameController.TriggerScorePoint ();
+			} else {
+				gameController.TriggerGameOver ();
+			}
+		} else if (ballType == BallType.RedBall) {
+			if (isVisibleByCamera) {
+				gameController.TriggerGameOver ();
+			} else {
+				gameController.TriggerScorePoint ();
+			}
 		}
-
-
-
 	}
 
 }

@@ -10,12 +10,18 @@ public class GameController : MonoBehaviour {
 	public GameObject gameOverText;
 	public GameObject scoreController;
 
+	private AudioSource audioSource;
+	public AudioClip scoreSound;
+
 	public bool isGameOver = false;
 
 	public enum DifficultyStage {
 		Stage1_Initial, // Balls only moving downwards
-		Stage2_Divided, // Screen split and balls moving from both directions (30 balls in)
-		Stage3_Warped, // Balls can now move in warped paths (60 balls in)
+		Stage2_Divided, // Screen split and balls moving from both directions (20 balls in)
+		Stage3_Warped, // Balls can now move in warped paths (40 balls in)
+		Stage4_Reverse, // Balls can now reverse (50 balls in)
+		Stage5_ReverseAndCross, // Balls can now reverse and cross over (60 balls in)
+		Stage6_RedBalls, // Balls can now be red (70 balls in)
 		// More to be added...
 	}
 
@@ -25,6 +31,10 @@ public class GameController : MonoBehaviour {
 	private int numBallsSpawned = 0; // # of balls spawned so far
 	private float timeOfLastSpawn;
 	private float spawnFreqIncrement = 0.02f;
+
+	void Awake () {
+		audioSource = GetComponent<AudioSource>();
+	}
 
 	// Use this for initialization
 	void Start () {
@@ -94,20 +104,77 @@ public class GameController : MonoBehaviour {
 		GameObject spawnedBall = Instantiate (ballPrefab, spawnPositionWorld, Quaternion.identity);
 		spawnedBall.transform.localScale = new Vector3 (0.7f, 0.7f, 1.0f);
 
+		// Adjust the movement pattern based on the difficulty level
+		float randomNum = Random.value;
+		BallBehaviour.MovementPattern movementPattern = BallBehaviour.MovementPattern.Straight;
+
 		if (difficultyStage == DifficultyStage.Stage3_Warped) {
-			BallBehaviour spawnedBallScript = spawnedBall.GetComponent <BallBehaviour>();
-			spawnedBallScript.movementPattern = Random.value > 0.5 ? BallBehaviour.MovementPattern.Wave :BallBehaviour.MovementPattern.Straight;
+			if (randomNum < 0.7) {
+				movementPattern = BallBehaviour.MovementPattern.Straight;
+			}
+			else {
+				movementPattern = BallBehaviour.MovementPattern.Wave;
+			}
 		}
+		else if (difficultyStage == DifficultyStage.Stage4_Reverse) {
+			if (randomNum < 0.5) {
+				movementPattern = BallBehaviour.MovementPattern.Straight;
+			}
+			else if (randomNum < 0.75) {
+				movementPattern = BallBehaviour.MovementPattern.Wave;
+			}
+			else {
+				movementPattern = BallBehaviour.MovementPattern.Reverse;
+			}
+		}
+		else if (difficultyStage == DifficultyStage.Stage5_ReverseAndCross || difficultyStage == DifficultyStage.Stage6_RedBalls) {
+			if (randomNum < 0.4) {
+				movementPattern = BallBehaviour.MovementPattern.Straight;
+			}
+			else if (randomNum < 0.6) {
+				movementPattern = BallBehaviour.MovementPattern.Wave;
+			}
+			else if (randomNum < 0.8) {
+				movementPattern = BallBehaviour.MovementPattern.Reverse;
+			}
+			else {
+				movementPattern = BallBehaviour.MovementPattern.ReverseAndCross;
+			}
+		}
+
+		// Adjust the color type
+		BallBehaviour.BallType ballType = BallBehaviour.BallType.WhiteBall;
+
+		if (difficultyStage == DifficultyStage.Stage6_RedBalls || true) {
+			ballType = Random.value > 0.3 ? BallBehaviour.BallType.WhiteBall : BallBehaviour.BallType.RedBall;
+		}
+
+		BallBehaviour spawnedBallScript = spawnedBall.GetComponent <BallBehaviour>();
+		spawnedBallScript.movementPattern = movementPattern;
+		spawnedBallScript.ballType = ballType;
 	}
 
 	private void UpdateDifficultLevel() {
-		if (difficultyStage == DifficultyStage.Stage1_Initial && numBallsSpawned > 30) {
+		bool isDebugging = false;
+		float ballSpawnMultiplier = isDebugging ? 2.0f : 1.0f;
+		float numBallsSpawnedAdjusted = ballSpawnMultiplier * numBallsSpawned;
+
+		if (difficultyStage == DifficultyStage.Stage1_Initial && numBallsSpawnedAdjusted > 20) {
 			difficultyStage = DifficultyStage.Stage2_Divided;
 
 			Instantiate (dividerPrefab, new Vector3(), Quaternion.identity);
 		}
-		else if (difficultyStage == DifficultyStage.Stage2_Divided && numBallsSpawned > 60) {
+		else if (difficultyStage == DifficultyStage.Stage2_Divided && numBallsSpawnedAdjusted > 40) {
 			difficultyStage = DifficultyStage.Stage3_Warped;
+		}
+		else if (difficultyStage == DifficultyStage.Stage3_Warped && numBallsSpawnedAdjusted > 50) {
+			difficultyStage = DifficultyStage.Stage4_Reverse;
+		}
+		else if (difficultyStage == DifficultyStage.Stage4_Reverse && numBallsSpawnedAdjusted > 60) {
+			difficultyStage = DifficultyStage.Stage5_ReverseAndCross;
+		}
+		else if (difficultyStage == DifficultyStage.Stage5_ReverseAndCross && numBallsSpawnedAdjusted > 70) {
+			difficultyStage = DifficultyStage.Stage6_RedBalls;
 		}
 	}
 
@@ -118,6 +185,8 @@ public class GameController : MonoBehaviour {
 
 		ScoreController controller = scoreController.GetComponent<ScoreController>();
 		controller.score++;
+
+		audioSource.PlayOneShot(scoreSound);
 	}
 
 	public void TriggerGameOver() {
